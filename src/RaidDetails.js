@@ -23,9 +23,8 @@ const RaidDetails = () => {
             query:`{
               reportData {
                 report(code:"${id}"){
-                    rankings
-                    events(abilityID:11597){
-                        data
+                    fights{
+                      name
                     }
                     rankedCharacters{
                       name
