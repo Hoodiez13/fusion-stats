@@ -46,7 +46,7 @@ const AppNav = () => {
                     }}
                     anchorEl={anchor}
                     open={open}
-                    onClose={handleClose}
+                    onClose={()=>{handleClose(null)}}
                   >
                     <div style={{height:8}}></div>
                     <span style={{fontWeight:500, fontSize:18}}>25 Man Raids</span>
