@@ -6,7 +6,7 @@ import _ from 'lodash'
 import FlexContainer from './FlexContainer'
 import { Chip, Accordion, AccordionSummary, Typography, AccordionDetails } from '@mui/material'
 import { validateEnchantments, validateGems } from './Validations'
-import { ExpandMore } from '@mui/icons-material'
+import { CountertopsOutlined, ExpandMore } from '@mui/icons-material'
 import { getUsage } from './ConsumeUsage'
 import { getClassColor } from './ClassDetails'
 
@@ -23,6 +23,8 @@ const RaidDetails = () => {
     const [title, setTitle] = useState(null)
 
     const [isLoading, setIsLoading] = useState(true)
+
+    var unValidatedPlayers = []
 
     const buffsColumns = [
       {id:28507, name:"Haste Potion"},
@@ -91,9 +93,15 @@ const RaidDetails = () => {
               tanks.forEach((tank)=>{
 
                 dps.forEach((player, i)=>{
-                  if(tank.name === player.name){
-                    tank.combatantInfo.gear = _.union(tank.combatantInfo.gear, player.combatantInfo.gear)
-                    dps.splice(i, 1)
+                  console.log(player)
+                  if(player.type === "Unknown"){
+                    dps.splice(i,1)
+                  }
+                  else{
+                    if(tank.name === player.name){
+                      tank.combatantInfo.gear = _.union(tank.combatantInfo.gear, player.combatantInfo.gear)
+                      dps.splice(i, 1)
+                    }
                   }
                 })
 
@@ -115,54 +123,52 @@ const RaidDetails = () => {
                 })
               })
 
-              var unValidatedPlayers = _.union(dps, healers, tanks)
-              unValidatedPlayers.forEach((player, i)=>{
+              unValidatedPlayers = _.union(dps, healers, tanks)
+              unValidatedPlayers.forEach((player, index, object)=>{
                 if(player.combatantInfo.gear){
+                  console.log(player)
                   player.failedEnchants = validateEnchantments(player.combatantInfo.gear, player.specs[0])
                   player.failedGems = validateGems(player.combatantInfo.gear)
                 }
                 else{
-                  unValidatedPlayers.splice(i, 1)
+                  object.splice(index, 1)
                 }
               })
-              // getUsage(unValidatedPlayers, hastePotions, 'hastePotion')
-              // getUsage(unValidatedPlayers, strengthFood, 'strengthFood')
               setPlayers(_.cloneDeep(unValidatedPlayers))
               setTitle(res.data.data.reportData.report.title)
             }
         }).then(function(res){
-          
-          var queryString = ''
-          players.forEach(player=>{
-            queryString = queryString + `${player.name} : table(sourceID:${player.id}, dataType:Buffs, startTime:0, endTime:15000000)\n`
-          })
 
-          axios.request({
-            url: "api/v2/client",
-            method: "post",
-            baseURL: "https://classic.warcraftlogs.com/",
-            headers: {
-              "Authorization": `Bearer ${authToken}`
-            },
-            data:{
-              query:`{
-                reportData {
-                  report(code:"${id}"){
-                    ${queryString}
-                  }
-                }
-              }`
-            }
-          }).then((res)=>{
-            console.log(players)
-            players.forEach((player)=>{
-              console.log(player)
-              player.buffs = res.data.data.reportData.report[player.name].data.auras
-              console.log(player)
-            })
-            setPlayers(_.cloneDeep(players))
-            setIsLoading(false)
-          })
+          // var queryString = ''
+          // unValidatedPlayers.forEach(player=>{
+          //   queryString = queryString + `${player.name} : table(sourceID:${player.id}, dataType:Buffs, startTime:0, endTime:15000000)\n`
+          // })
+
+          // axios.request({
+          //   url: "api/v2/client",
+          //   method: "post",
+          //   baseURL: "https://classic.warcraftlogs.com/",
+          //   headers: {
+          //     "Authorization": `Bearer ${authToken}`
+          //   },
+          //   data:{
+          //     query:`{
+          //       reportData {
+          //         report(code:"${id}"){
+          //           ${queryString}
+          //         }
+          //       }
+          //     }`
+          //   }
+          // }).then((res)=>{
+
+          //   unValidatedPlayers.forEach((player)=>{
+          //     player.buffs = res.data.data.reportData.report[player.name].data.auras
+          //   })
+          //   setPlayers(_.cloneDeep(unValidatedPlayers))
+          // }).then(()=>{
+          //   setIsLoading(false)
+          // })
         })
       }
 
@@ -188,6 +194,7 @@ const RaidDetails = () => {
                 })}
               </div>
                 {players.map((player, i)=>{
+                  console.log(player)
                     return (<div key={player.name} style={{display:'flex', backgroundColor: i%2 === 0 ? "#DDDDDDDD" : null}}>
                               <div style={{width:125, backgroundColor:getClassColor(player.type), fontWeight:500, fontSize:18}}>{player.name}</div>
                               <div style={{display:'flex'}}> 
