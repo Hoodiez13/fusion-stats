@@ -4,11 +4,11 @@ import axios from 'axios'
 import { authToken } from './API'
 import _ from 'lodash'
 import FlexContainer from './FlexContainer'
-import { Chip, Accordion, AccordionSummary, Typography, AccordionDetails } from '@mui/material'
 import { validateEnchantments, validateGems } from './Validations'
-import { CountertopsOutlined, ExpandMore } from '@mui/icons-material'
-import { getUsage } from './ConsumeUsage'
 import { getClassColor } from './ClassDetails'
+import FailColumns from './FailColumns'
+import BuffColumns from './BuffColumns'
+import CastColumns from './CastColumns'
 
 const RaidDetails = () => {
 
@@ -16,7 +16,7 @@ const RaidDetails = () => {
     //used to identify the user that we are editing
     const {id} = useParams()
 
-    const [players, setPlayers] = useState([])
+    const [players, setPlayers] = useState(null)
 
     const [totalCombatTime, setTotalCombatTime] = useState(0)
 
@@ -27,24 +27,15 @@ const RaidDetails = () => {
     var unValidatedPlayers = []
 
     const buffsColumns = [
-      {id:28507, name:"Haste Potion"},
-      {id:33256, name:"Well Fed"},
-      {id:33082, name:"Strength V"},
-      {id:28520, name:"Relentless Assult"},
-      {id:35476, name:"Drums of Battle"}
+      {id:33256, name:"Well Fed",          uses:true,  uptime:true},
+      {id:33082, name:"Strength V",        uses:true,  uptime:true},
+      {id:28520, name:"Relentless Assult", uses:false, uptime:true}
     ]
 
-    //const [startTime, setStartTime] = useState(0)
-    //const [endTime, setEndTime] = useState(0)
-
-    // const tableType = new GraphQLObjectType({
-    //   name:'table',
-    //   type:'',
-    //   args:{
-    //     abilityID: new GraphQLList(GraphQLID),
-    //     dataType: new GraphQLEnumType()
-    //   }
-    // })
+    const castsColumns = [
+      {id:28507, name:"Haste Potion",      uses:true},
+      {id:35476, name:"Drums of Battle",   uses:true}
+    ]
 
     const getRaidInfo = () =>{
 
@@ -65,6 +56,8 @@ const RaidDetails = () => {
                   fights{
                     startTime
                     endTime
+                    encounterID
+                    name
                   }
                   table(startTime:0, endTime:15000000)
                 }
@@ -74,18 +67,16 @@ const RaidDetails = () => {
         }).then(function(res) {
             if(res.data.data){
               var fights = res.data.data.reportData.report.fights
-              // hastePot : table(abilityID:28507, dataType:Buffs, startTime:0, endTime:15000000)
-              // strengthFood : table(abilityID:33256, dataType:Buffs, startTime:0, endTime:15000000)
-              // var hastePotions = res.data.data.reportData.report.hastePot.data.auras
-              // var strengthFood = res.data.data.reportData.report.strengthFood.data.auras
               var dps = res.data.data.reportData.report.table.data.playerDetails.dps
               var healers = res.data.data.reportData.report.table.data.playerDetails.healers
               var tanks = res.data.data.reportData.report.table.data.playerDetails.tanks
-
+              
               var tempTotalCombatTime = 0
 
               fights.forEach((fight)=>{
-                tempTotalCombatTime = tempTotalCombatTime + (fight.endTime - fight.startTime)
+                if(fight.encounterID > 0){
+                  tempTotalCombatTime = tempTotalCombatTime + (fight.endTime - fight.startTime)
+                }
               })
 
               setTotalCombatTime(tempTotalCombatTime)
@@ -93,7 +84,6 @@ const RaidDetails = () => {
               tanks.forEach((tank)=>{
 
                 dps.forEach((player, i)=>{
-                  console.log(player)
                   if(player.type === "Unknown"){
                     dps.splice(i,1)
                   }
@@ -126,7 +116,6 @@ const RaidDetails = () => {
               unValidatedPlayers = _.union(dps, healers, tanks)
               unValidatedPlayers.forEach((player, index, object)=>{
                 if(player.combatantInfo.gear){
-                  console.log(player)
                   player.failedEnchants = validateEnchantments(player.combatantInfo.gear, player.specs[0])
                   player.failedGems = validateGems(player.combatantInfo.gear)
                 }
@@ -137,105 +126,80 @@ const RaidDetails = () => {
               setPlayers(_.cloneDeep(unValidatedPlayers))
               setTitle(res.data.data.reportData.report.title)
             }
-        }).then(function(res){
+        }).then(()=>{
 
-          // var queryString = ''
-          // unValidatedPlayers.forEach(player=>{
-          //   queryString = queryString + `${player.name} : table(sourceID:${player.id}, dataType:Buffs, startTime:0, endTime:15000000)\n`
-          // })
+          var queryString = ''
+          unValidatedPlayers.forEach(player=>{
+            queryString = queryString + `${player.name}Buffs : table(sourceID:${player.id}, dataType:Buffs, startTime:0, endTime:15000000)\n`
+            queryString = queryString + `${player.name}Casts : table(sourceID:${player.id}, dataType:Casts, startTime:0, endTime:15000000)\n`
+          })
 
-          // axios.request({
-          //   url: "api/v2/client",
-          //   method: "post",
-          //   baseURL: "https://classic.warcraftlogs.com/",
-          //   headers: {
-          //     "Authorization": `Bearer ${authToken}`
-          //   },
-          //   data:{
-          //     query:`{
-          //       reportData {
-          //         report(code:"${id}"){
-          //           ${queryString}
-          //         }
-          //       }
-          //     }`
-          //   }
-          // }).then((res)=>{
-
-          //   unValidatedPlayers.forEach((player)=>{
-          //     player.buffs = res.data.data.reportData.report[player.name].data.auras
-          //   })
-          //   setPlayers(_.cloneDeep(unValidatedPlayers))
-          // }).then(()=>{
-          //   setIsLoading(false)
-          // })
+          axios.request({
+            url: "api/v2/client",
+            method: "post",
+            baseURL: "https://classic.warcraftlogs.com/",
+            headers: {
+              "Authorization": `Bearer ${authToken}`
+            },
+            data:{
+              query:`{
+                reportData {
+                  report(code:"${id}"){
+                    ${queryString}
+                  }
+                }
+              }`
+            }
+          }).then((res)=>{
+            unValidatedPlayers.forEach((player)=>{
+              player.buffs = res.data.data.reportData.report[`${player.name}Buffs`].data.auras
+              player.casts = res.data.data.reportData.report[`${player.name}Casts`].data.entries
+            })
+            setPlayers(_.cloneDeep(unValidatedPlayers))
+          }).then(()=>{
+            setIsLoading(false)
+          })
         })
       }
 
     useEffect(() => {
+      if(!players){
         getRaidInfo()
+      }
     }, [])
 
     return ( isLoading ? <div>Loading</div> :
         <FlexContainer>
             <h1>{title}</h1>
             <div>
-              <div style={{display:'flex'}}>
+              <div style={{display:'flex', position:'sticky'}}>
                 <div style={{width:125, fontWeight:500}}>Player Name</div>
-                <div style={{width:300, fontWeight:500}}>Enchant Fails</div>
-                <div style={{width:300, fontWeight:500}}>Gem Fails</div>
+                {castsColumns.map((cast)=>{
+                  return(
+                    <div style={{width:125, fontWeight:500}}>
+                      <div>{cast.name}</div>
+                      <div>{cast.uses?<span>Uses</span>:null}{cast.uses && cast.uptime ? <span> - </span>:null}{cast.uptime ? <span>Up Time</span>:null}</div>
+                    </div>
+                  )
+                })}
                 {buffsColumns.map((buff)=>{
                   return(
                     <div style={{width:125, fontWeight:500}}>
                       <div>{buff.name}</div>
-                      <div>Uses - Up Time</div>
+                      <div>{buff.uses?<span>Uses</span>:null}{buff.uses && buff.uptime ? <span> - </span>:null}{buff.uptime ? <span>Up Time</span>:null}</div>
                     </div>
                   )
                 })}
+                <div style={{width:300, fontWeight:500}}>Enchant Fails</div>
+                <div style={{width:300, fontWeight:500}}>Gem Fails</div>
               </div>
                 {players.map((player, i)=>{
-                  console.log(player)
-                    return (<div key={player.name} style={{display:'flex', backgroundColor: i%2 === 0 ? "#DDDDDDDD" : null}}>
-                              <div style={{width:125, backgroundColor:getClassColor(player.type), fontWeight:500, fontSize:18}}>{player.name}</div>
-                              <div style={{display:'flex'}}> 
-                                <Accordion sx={{width:300, backgroundColor:i%2 === 0 ? "#DDDDDDDD" : null}}>
-                                  <AccordionSummary sx={{height:48}} expandIcon={<ExpandMore />}>
-                                    <Typography>Enchant Fails ({player.failedEnchants.length})</Typography>
-                                  </AccordionSummary>
-                                  <AccordionDetails>
-                                    <div>
-                                      {player.failedEnchants.map((item)=>{return<div><Chip label={item.name+" - "+item.permanentEnchantName} size="small"/></div>})}
-                                    </div>
-                                  </AccordionDetails>
-                                </Accordion>
-                              </div>
-                              <div>
-                                <Accordion sx={{width:300, backgroundColor:i%2 === 0 ? "#DDDDDDDD" : null}}>
-                                  <AccordionSummary expandIcon={<ExpandMore />}>
-                                    <Typography>Gem Fails ({player.failedGems.length})</Typography>
-                                  </AccordionSummary>
-                                  <AccordionDetails>
-                                    <div>
-                                      {player.failedGems.map((item)=>{
-                                        return(
-                                          <div>
-                                            {item.failGems.map((gem)=>{
-                                              return<div><Chip label={item.name+" - "+gem.id}/></div>
-                                            })}
-                                          </div>)})}
-                                    </div>
-                                  </AccordionDetails>
-                                </Accordion>
-                              </div>
-                              {buffsColumns.map((buff)=>{
-                                var playerBuff = player.buffs.find(pbuff => pbuff.id === buff.id)
-                                return(
-                                  <div style={{width:125}}>
-                                    { playerBuff ? `${playerBuff.totalUses} - %${Math.round(playerBuff.totalUpTime/totalCombatTime * 100) / 100}` : '-'}
-                                  </div>
-                                )
-                              })}
-                            </div>)
+                  return (<div key={player.name} style={{display:'flex', backgroundColor: i%2 === 0 ? "#DDDDDDDD" : null}}>
+                            <div style={{width:125, backgroundColor:getClassColor(player.type), fontWeight:500, fontSize:18}}>{player.name}</div>
+                            <CastColumns player={player} castsColumns={castsColumns}/>
+                            <BuffColumns player={player} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+                            <FailColumns player={player} i={i}/>
+                          </div>)
                 })}
             </div>
         </FlexContainer>

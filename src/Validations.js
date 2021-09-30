@@ -90,7 +90,7 @@ export const validateEnchantments = (gear, spec) =>{
     }
 
     gear.forEach((item) => {
-        if(item.permanentEnchant && (item.slot !== 10 || item.slot !== 11) && !checklist.includes(item.permanentEnchant)){failGear.push(item)}
+        if(item.permanentEnchant && (item.slot !== 10 && item.slot !== 11) && !checklist.includes(item.permanentEnchant)){failGear.push(item)}
     })
 
     return failGear
