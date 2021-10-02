@@ -31,6 +31,8 @@ const RaidDetails = () => {
       {id:33082, name:"Strength V",        uses:true,  uptime:true},
       {id:28520, name:"Relentless Assult", uses:false, uptime:true}
     ]
+    //28521 28518 28540 28520 flask
+    //33261 43771 33257 33263 33254 33268 43764 33256 well fed
 
     const castsColumns = [
       {id:28507, name:"Haste Potion",      uses:true},
