@@ -9,6 +9,7 @@ import { getClassColor } from './ClassDetails'
 import FailColumns from './FailColumns'
 import BuffColumns from './BuffColumns'
 import CastColumns from './CastColumns'
+import Loading from './Loading'
 
 const RaidDetails = () => {
 
@@ -23,6 +24,8 @@ const RaidDetails = () => {
     const [title, setTitle] = useState(null)
 
     const [isLoading, setIsLoading] = useState(true)
+
+    const [error, setError] = useState(false)
 
     var unValidatedPlayers = []
 
@@ -128,39 +131,51 @@ const RaidDetails = () => {
               setPlayers(_.cloneDeep(unValidatedPlayers))
               setTitle(res.data.data.reportData.report.title)
             }
-        }).then(()=>{
-
-          var queryString = ''
-          unValidatedPlayers.forEach(player=>{
-            queryString = queryString + `${player.name}Buffs : table(sourceID:${player.id}, dataType:Buffs, startTime:0, endTime:15000000)\n`
-            queryString = queryString + `${player.name}Casts : table(sourceID:${player.id}, dataType:Casts, startTime:0, endTime:15000000)\n`
-          })
-
-          axios.request({
-            url: "api/v2/client",
-            method: "post",
-            baseURL: "https://classic.warcraftlogs.com/",
-            headers: {
-              "Authorization": `Bearer ${authToken}`
-            },
-            data:{
-              query:`{
-                reportData {
-                  report(code:"${id}"){
-                    ${queryString}
-                  }
-                }
-              }`
+            else{
+              setError(true)
+              setIsLoading(false)
             }
-          }).then((res)=>{
-            unValidatedPlayers.forEach((player)=>{
-              player.buffs = res.data.data.reportData.report[`${player.name}Buffs`].data.auras
-              player.casts = res.data.data.reportData.report[`${player.name}Casts`].data.entries
+        }).then(()=>{
+          if(!error){
+
+            var queryString = ''
+            unValidatedPlayers.forEach(player=>{
+              queryString = queryString + `Buffs${player.id} : table(sourceID:${player.id}, dataType:Buffs, startTime:0, endTime:15000000)\n`
+              queryString = queryString + `Casts${player.id} : table(sourceID:${player.id}, dataType:Casts, startTime:0, endTime:15000000)\n`
             })
-            setPlayers(_.cloneDeep(unValidatedPlayers))
-          }).then(()=>{
-            setIsLoading(false)
-          })
+
+            axios.request({
+              url: "api/v2/client",
+              method: "post",
+              baseURL: "https://classic.warcraftlogs.com/",
+              headers: {
+                "Authorization": `Bearer ${authToken}`
+              },
+              data:{
+                query:`{
+                  reportData {
+                    report(code:"${id}"){
+                      ${queryString}
+                    }
+                  }
+                }`
+              }
+            }).then((res)=>{
+
+              if(res.data.data){
+                unValidatedPlayers.forEach((player)=>{
+                  player.buffs = res.data.data.reportData.report[`Buffs${player.id}`].data.auras
+                  player.casts = res.data.data.reportData.report[`Casts${player.id}`].data.entries
+                })
+                setPlayers(_.cloneDeep(unValidatedPlayers))
+              }else{
+                setError(true)
+                setIsLoading(false)
+              }
+            }).then(()=>{
+              setIsLoading(false)
+            })
+          }
         })
       }
 
@@ -170,9 +185,10 @@ const RaidDetails = () => {
       }
     }, [])
 
-    return ( isLoading ? <div>Loading</div> :
+    return ( isLoading ? <Loading/> :
         <FlexContainer>
             <h1>{title}</h1>
+            {error ? <div>Error with this log.</div> :
             <div>
               <div style={{display:'flex', position:'sticky'}}>
                 <div style={{width:125, fontWeight:500}}>Player Name</div>
@@ -203,7 +219,7 @@ const RaidDetails = () => {
                             <FailColumns player={player} i={i}/>
                           </div>)
                 })}
-            </div>
+            </div>}
         </FlexContainer>
     )
 }

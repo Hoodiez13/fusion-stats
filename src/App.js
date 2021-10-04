@@ -19,6 +19,7 @@ function App() {
           <AppNav/>
           <Switch>
             <Route exact path='/' ><Home/></Route>
+            <Route exact path='/fusion-stats' ><Home/></Route>
             <Route exact path='/raid/:id'><RaidHome/></Route>
             <Route exact path='/raiddetails/:id'><RaidDetails/></Route>
           </Switch>
