@@ -30,3 +30,20 @@ function App() {
 }
 
 export default App;
+
+//The cracks in our armor grew after years of careless ambition
+//Exposing our weaknesses and showing sides of me that I never wanted to see
+//Will all this just be an alluring memory
+//Ive been chasing for sometime now
+//Or can this be, Rebuilt, not better just different
+
+
+//Im just feeling dark blue
+//Sorry, man, its not you
+//I guess Im just like this
+//Up Late at night when
+
+//I see life in greyscale
+//When I see my plans fail
+//Sorry Im just like this
+//Please dont mind my mindset

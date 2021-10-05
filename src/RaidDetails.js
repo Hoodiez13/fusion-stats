@@ -10,6 +10,7 @@ import FailColumns from './FailColumns'
 import BuffColumns from './BuffColumns'
 import CastColumns from './CastColumns'
 import Loading from './Loading'
+import SpecRow from './SpecRow'
 
 const RaidDetails = () => {
 
@@ -191,6 +192,7 @@ const RaidDetails = () => {
             {error ? <div>Error with this log.</div> :
             <div>
               <div style={{display:'flex', position:'sticky'}}>
+                <div style={{width:48}}></div>
                 <div style={{width:125, fontWeight:500}}>Player Name</div>
                 {castsColumns.map((cast)=>{
                   return(
@@ -211,14 +213,31 @@ const RaidDetails = () => {
                 <div style={{width:300, fontWeight:500}}>Enchant Fails</div>
                 <div style={{width:300, fontWeight:500}}>Gem Fails</div>
               </div>
-                {players.map((player, i)=>{
-                  return (<div key={player.name} style={{display:'flex', backgroundColor: i%2 === 0 ? "#DDDDDDDD" : null}}>
-                            <div style={{width:125, backgroundColor:getClassColor(player.type), fontWeight:500, fontSize:18}}>{player.name}</div>
-                            <CastColumns player={player} castsColumns={castsColumns}/>
-                            <BuffColumns player={player} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
-                            <FailColumns player={player} i={i}/>
-                          </div>)
-                })}
+               <SpecRow players={players} spec={"Protection"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Feral"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Warden"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Holy"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Discipline"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Restoration"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Fury"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Arms"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Combat"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Subtlety"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Assasination"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Enhancement"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Retribution"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"BeastMastery"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Survival"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Marksmanship"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Frost"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Fire"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Arcane"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Destruction"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Affliction"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Demonology"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Shadow"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Balance"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
+               <SpecRow players={players} spec={"Elemental"} castsColumns={castsColumns} buffsColumns={buffsColumns} totalCombatTime={totalCombatTime}/>
             </div>}
         </FlexContainer>
     )
