@@ -47,3 +47,10 @@ export default App;
 //When I see my plans fail
 //Sorry Im just like this
 //Please dont mind my mindset
+
+//I dont like the things i used to say
+//Im not sure why I ever felt that way
+//Moving forward is much harder
+//when the weight your pulling is a constant reminder of
+//how ive been, not where im going
+//what ive said, not how im growing
