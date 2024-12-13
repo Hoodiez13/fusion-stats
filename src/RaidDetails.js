@@ -3,16 +3,10 @@ import { useParams } from "react-router";
 import axios from "axios";
 import { authToken } from "./API";
 import _ from "lodash";
-import FlexContainer from "./FlexContainer";
 import { validateEnchantments, validateGems } from "./Validations";
 import { getClassColor } from "./ClassDetails";
-import FailColumns from "./FailColumns";
-import BuffColumns from "./BuffColumns";
-import CastColumns from "./CastColumns";
 import Loading from "./Loading";
-import SpecRow from "./SpecRow";
 import { DataGrid } from "@mui/x-data-grid";
-import { Height } from "@mui/icons-material";
 import { Checkbox, FormControlLabel } from "@mui/material";
 
 const RaidDetails = () => {
@@ -414,7 +408,6 @@ const RaidDetails = () => {
         <div>Error with this log.</div>
       ) : (
         <div style={{ height: "calc(100vh - 200px)", width: "100%" }}>
-          {console.log(players)}
           <DataGrid
             columns={columns}
             rows={filteredPlayers}
