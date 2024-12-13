@@ -35,7 +35,7 @@ const AppNav = () => {
           <Typography
             sx={{ cursor: "pointer" }}
             onClick={() => {
-              history.push("/");
+              history.push("/fusion-stats");
             }}
             variant="h6"
             color="inherit"
