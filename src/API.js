@@ -27,7 +27,7 @@ export const getToken = () => {
     })
     .then(function (res) {
       if (res.data.access_token) {
-        console.log(res.data.access_token);
+        //console.log(res.data.access_token);
       }
     });
 };
