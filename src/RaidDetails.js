@@ -7,24 +7,27 @@ import { validateEnchantments, validateGems } from "./Validations";
 import { getClassColor } from "./ClassDetails";
 import Loading from "./Loading";
 import { DataGrid } from "@mui/x-data-grid";
-import { Checkbox, FormControlLabel } from "@mui/material";
+import { Checkbox, FormControlLabel, useTheme } from "@mui/material";
+import ClassIcon from "./ClassIcon";
+
+const getColorFade = (percent, max, min) =>{
+return Math.round((percent-min)/(max-min)*255).toString(16).padStart(2, '0')
+}
 
 const RaidDetails = () => {
   //holds the id param from the URL
   //used to identify the user that we are editing
   const { id } = useParams();
 
-  const [players, setPlayers] = useState(null);
+  const theme = useTheme()
 
-  const [totalCombatTime, setTotalCombatTime] = useState(0);
+  const [players, setPlayers] = useState(null);
 
   const [title, setTitle] = useState(null);
 
   const [isLoading, setIsLoading] = useState(true);
 
   const [error, setError] = useState(false);
-
-  const [deathEvents, setDeathEvents] = useState([]);
 
   const [filteredPlayers, setFilteredPlayers] = useState([]);
 
@@ -35,6 +38,15 @@ const RaidDetails = () => {
   const [dpsFilter, setDPSFilter] = useState(true);
 
   const [allFilter, setAllFilter] = useState(true);
+
+  const [sapperRange, setSapperRange] = useState({min:null, max:null})
+  const [sunderRange, setSunderRange] = useState({min:null, max:null})
+  const [dynamiteRange, setDynamiteRange] = useState({min:null, max:null})
+  const [grenadeRange, setGrenadeRange] = useState({min:null, max:null})
+  const [dispelRange, setDispelRange] = useState({min:null, max:null})
+  const [damageRange, setDamageRange] = useState({min:null, max:null})
+  const [deathRange, setDeathRange] = useState({min:null, max:null})
+  const [expDmgRange, setExpDmgRange] = useState({min:null, max:null})
 
   var unValidatedPlayers = [];
 
@@ -66,34 +78,21 @@ const RaidDetails = () => {
     setAllFilter(e.target.checked);
   };
 
-  const buffsColumns = [
-    { id: 33256, name: "Well Fed", uses: true, uptime: true },
-    { id: 33082, name: "Strength V", uses: true, uptime: true },
-    { id: 28520, name: "Relentless Assult", uses: false, uptime: true },
-  ];
-  //28521 28518 28540 28520 flask
-  //33261 43771 33257 33263 33254 33268 43764 33256 well fed
-
-  const castsColumns = [
-    { id: 28507, name: "Haste Potion", uses: true },
-    { id: 35476, name: "Drums of Battle", uses: true },
-  ];
-
   const columns = [
     {
       headerName: "",
       field: "icon",
-      width: 72,
+      width: 32,
       renderCell: (params) => (
         <div>
-          <img src={`/media/${params.row.icon}.jpg`} alt="Class Icon" />
+          <ClassIcon playerClass={params.row.icon}/>
         </div>
       ),
     },
     {
       headerName: "Name",
       field: "name",
-      width: 200,
+      width: 125,
       renderCell: (params) => (
         <div
           style={{
@@ -106,11 +105,28 @@ const RaidDetails = () => {
         </div>
       ),
     },
+    { headerName: "Damage Done", field: "dmgDone", width: 150,
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, damageRange.max, damageRange.min)
+        }}>
+          {params.value}
+        </div>
+      ), },
     {
       headerName: "Sunders",
       field: "sunders",
       width: 100,
       align: "center",
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, sunderRange.max, sunderRange.min)
+        }}>
+          {params.value}
+        </div>
+      ),
       valueGetter: (value, row) => {
         var sunders = row.casts.find((cast) => cast.name === "Sunder Armor");
         if (sunders) {
@@ -120,11 +136,100 @@ const RaidDetails = () => {
         }
       },
     },
+
+    {
+      headerName: "Sapper Charges",
+      field: "sappers",
+      width: 100,
+      align: "center",
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, sapperRange.max, sapperRange.min)
+        }}>
+          {params.value}
+        </div>
+      ),
+      valueGetter: (value, row) => {
+        var sappers = row.casts.find((cast) => cast.name === "Goblin Sapper Charge");
+        if (sappers) {
+          return sappers.total;
+        } else {
+          return 0;
+        }
+      },
+    },
+    {
+      headerName: "Dynamite",
+      field: "dynamite",
+      width: 100,
+      align: "center",
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, dynamiteRange.max, dynamiteRange.min)
+        }}>
+          {params.value}
+        </div>
+      ),
+      valueGetter: (value, row) => {
+        var dynamite = row.casts.find((cast) => cast.name === "Dense Dynamite");
+        if (dynamite) {
+          return dynamite.total;
+        } else {
+          return 0;
+        }
+      },
+    },
+    {
+      headerName: "Grenade",
+      field: "grenade",
+      width: 100,
+      align: "center",
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, grenadeRange.max, grenadeRange.min)
+        }}>
+          {params.value}
+        </div>
+      ),
+      valueGetter: (value, row) => {
+        var grenade = row.casts.find((cast) => cast.name === "Iron Grenade");
+        if (grenade) {
+          return grenade.total;
+        } else {
+          return 0;
+        }
+      },
+    },
+    {
+      headerName: "Explosive Damage",
+      field: "expDmg",
+      width: 100,
+      align: "center",
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, expDmgRange.max, expDmgRange.min)
+        }}>
+          {params.value}
+        </div>
+      )
+    },
     {
       headerName: "Dispels",
       field: "dispels",
       width: 100,
       align: "center",
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.primary.main+getColorFade(params.value, dispelRange.max, dispelRange.min)
+        }}>
+          {params.value}
+        </div>
+      ),
       valueGetter: (value, row) => {
         var sunders = row.casts.find((cast) => cast.name === "Dispel Magic");
         if (sunders) {
@@ -134,22 +239,16 @@ const RaidDetails = () => {
         }
       },
     },
-    {
-      headerName: "Deaths",
-      field: "deaths",
-      width: 100,
+    { headerName: "Deaths", field: "deaths", width: 75,
       align: "center",
-      valueGetter: (value, row) => {
-        var deaths = 0;
-        deathEvents.forEach((event) => {
-          if (event.name === row.name) {
-            deaths = deaths + 1;
-          }
-        });
-        return deaths;
-      },
-    },
-    { headerName: "Damage Done", field: "dmgDone", width: 250 },
+      renderCell: (params) => (
+        
+        <div style={{
+          backgroundColor:theme.palette.error.main+getColorFade(params.value, deathRange.max, deathRange.min)
+        }}>
+          {params.value}
+        </div>
+      ), },
   ];
 
   const getRaidInfo = () => {
@@ -175,6 +274,7 @@ const RaidDetails = () => {
                     name
                   }
                   table(startTime:0, endTime:15000000)
+
                 }
               }
             }`,
@@ -182,33 +282,14 @@ const RaidDetails = () => {
       })
       .then(function (res) {
         if (res.data.data) {
-          var fights = res.data.data.reportData.report.fights;
+          var dmgTable = res.data.data.reportData.report.table.data.damageDone
+          //var fights = res.data.data.reportData.report.fights;
           var dps =
             res.data.data.reportData.report.table.data.playerDetails.dps;
           var healers =
             res.data.data.reportData.report.table.data.playerDetails.healers;
           var tanks =
             res.data.data.reportData.report.table.data.playerDetails.tanks;
-
-          var tempTotalCombatTime = 0;
-
-          fights.forEach((fight) => {
-            if (fight.encounterID > 0) {
-              tempTotalCombatTime =
-                tempTotalCombatTime + (fight.endTime - fight.startTime);
-            }
-          });
-
-          setTotalCombatTime(tempTotalCombatTime);
-
-          //DEATH EVENTS
-          if (res.data.data.reportData.report.table.data.deathEvents) {
-            setDeathEvents(
-              res.data.data.reportData.report.table.data.deathEvents
-            );
-          } else {
-            setDeathEvents([]);
-          }
 
           tanks.forEach((tank) => {
             dps.forEach((player, i) => {
@@ -231,7 +312,7 @@ const RaidDetails = () => {
                   tank.combatantInfo.gear,
                   healer.combatantInfo.gear
                 );
-                healer.splice(i, 1);
+                healers.splice(i, 1);
               }
             });
             tank.role = "tank";
@@ -254,8 +335,64 @@ const RaidDetails = () => {
             dpser.role = "dps";
           });
 
+          var tempDamageMin = null
+          var tempDamageMax = null
+          var tempDeathMin = null
+          var tempDeathMax = null
           unValidatedPlayers = _.union(dps, healers, tanks);
           unValidatedPlayers.forEach((player, index, object) => {
+
+            player.dmgDone = dmgTable.find(p=>p.name===player.name)?dmgTable.find(p=>p.name===player.name).total:0
+            var deaths = 0;
+            res.data.data.reportData.report.table.data.deathEvents.forEach((event) => {
+              if (event.name === player.name) {
+                deaths = deaths + 1;
+              }
+            });
+            player.deaths= deaths
+
+            //Confirming Damage Range
+            if (player.dmgDone) {
+              if(tempDamageMax === null){
+                tempDamageMax = player.dmgDone
+              }else{
+                if( player.dmgDone > tempDamageMax){
+                  tempDamageMax = player.dmgDone
+                }
+              }
+
+              if(tempDamageMin === null){
+                tempDamageMin = player.dmgDone
+              }else{
+                if( player.dmgDone < tempDamageMin){
+                  tempDamageMin = player.dmgDone
+                }
+              }
+            }else{
+              tempDamageMin = 0
+            }
+
+            //Confirming Death Range
+            if (deaths) {
+              if(tempDeathMax === null){
+                tempDeathMax = deaths
+              }else{
+                if( deaths > tempDeathMax){
+                  tempDeathMax = deaths
+                }
+              }
+
+              if(tempDeathMin === null){
+                tempDeathMin = deaths
+              }else{
+                if( deaths < tempDeathMin){
+                  tempDeathMin = deaths
+                }
+              }
+            }else{
+              tempDeathMin = 0
+            }
+            
             if (player.combatantInfo.gear) {
               player.failedEnchants = validateEnchantments(
                 player.combatantInfo.gear,
@@ -266,6 +403,9 @@ const RaidDetails = () => {
               object.splice(index, 1);
             }
           });
+
+          setDeathRange({min:tempDeathMin, max:tempDeathMax})
+          setDamageRange({min:tempDamageMin, max:tempDamageMax})
           setPlayers(_.cloneDeep(unValidatedPlayers));
           setTitle(res.data.data.reportData.report.title);
         } else {
@@ -285,6 +425,12 @@ const RaidDetails = () => {
               `Casts${player.id} : table(sourceID:${player.id}, dataType:Casts, startTime:0, endTime:15000000)\n`;
           });
 
+          queryString =
+          queryString +
+          `sapper : table(abilityID:13241, dataType:DamageDone, startTime:0, endTime:15000000)\n`;
+          queryString =
+          queryString +
+          `dynamite : table(abilityID:23063, dataType:DamageDone, startTime:0, endTime:15000000)\n`;
           axios
             .request({
               url: "api/v2/client",
@@ -305,6 +451,10 @@ const RaidDetails = () => {
             })
             .then((res) => {
               if (res.data.data) {
+
+                var sapperDamage =  res.data.data.reportData.report.sapper.data.entries
+                var dynamiteDamage = res.data.data.reportData.report.dynamite.data.entries
+
                 unValidatedPlayers.forEach((player) => {
                   player.buffs =
                     res.data.data.reportData.report[
@@ -315,7 +465,178 @@ const RaidDetails = () => {
                       `Casts${player.id}`
                     ].data.entries;
                 });
+                
 
+                var tempSapperMax = null
+                var tempSapperMin = null
+                var tempDynamiteMax = null
+                var tempDynamiteMin = null
+                var tempGrenadeMax = null
+                var tempGrenadeMin = null
+                var tempSunderMax = null
+                var tempSunderMin = null
+                var tempDispelMax = null
+                var tempDispelMin = null
+                var tempExpDmgMax = null
+                var tempExpDmgMin = null
+
+                  unValidatedPlayers.forEach((player)=>{
+
+                    var tempExpDmgTotal = 0
+
+                    sapperDamage.forEach((rec)=>{
+                      if(rec.id === player.id){
+                        tempExpDmgTotal = tempExpDmgTotal + rec.total
+                      }
+                    })
+
+                    dynamiteDamage.forEach((rec)=>{
+                      if(rec.id === player.id){
+                        tempExpDmgTotal = tempExpDmgTotal + rec.total
+                      }
+                    })
+
+                    player.expDmg = tempExpDmgTotal
+
+                    //Confirming Exp Damage Range
+                    if (tempExpDmgTotal) {
+                      if(tempExpDmgMax === null){
+                        tempExpDmgMax = tempExpDmgTotal
+                      }else{
+                        if( tempExpDmgTotal > tempExpDmgMax){
+                          tempExpDmgMax = tempExpDmgTotal
+                        }
+                      }
+
+                      if(tempExpDmgMin === null){
+                        tempExpDmgMin = tempExpDmgTotal
+                      }else{
+                        if( tempExpDmgTotal < tempExpDmgMin){
+                          tempExpDmgMin = tempExpDmgTotal
+                        }
+                      }
+                    }else{
+                      tempExpDmgMin = 0
+                    }
+
+                    //Confirming Sapper Range
+                    var sappers = player.casts.find((cast) => cast.name === "Goblin Sapper Charge");
+                    if (sappers) {
+                      if(tempSapperMax === null){
+                        tempSapperMax = sappers.total
+                      }else{
+                        if( sappers.total > tempSapperMax){
+                          tempSapperMax = sappers.total
+                        }
+                      }
+
+                      if(tempSapperMin === null){
+                        tempSapperMin = sappers.total
+                      }else{
+                        if( sappers.total < tempSapperMin){
+                          tempSapperMin = sappers.total
+                        }
+                      }
+                    }else{
+                      tempSapperMin = 0
+                    }
+
+                    //Confirming Sunder Range
+                    var sunders = player.casts.find((cast) => cast.name === "Sunder Armor");
+                    if (sunders) {
+                      if(tempSunderMax === null){
+                        tempSunderMax = sunders.total
+                      }else{
+                        if( sunders.total > tempSunderMax){
+                          tempSunderMax = sunders.total
+                        }
+                      }
+
+                      if(tempSunderMin === null){
+                        tempSunderMin = sunders.total
+                      }else{
+                        if( sunders.total < tempSunderMin){
+                          tempSunderMin = sunders.total
+                        }
+                      }
+                    }else{
+                      tempSunderMin = 0
+                    }
+
+                    //Confirming Dynamite Range
+                    var dynamite = player.casts.find((cast) => cast.name === "Dense Dynamite");
+                    if (dynamite) {
+                      if(tempDynamiteMax === null){
+                        tempDynamiteMax = dynamite.total
+                      }else{
+                        if( dynamite.total > tempDynamiteMax){
+                          tempDynamiteMax = dynamite.total
+                        }
+                      }
+
+                      if(tempDynamiteMin === null){
+                        tempDynamiteMin = dynamite.total
+                      }else{
+                        if( dynamite.total < tempDynamiteMin){
+                          tempDynamiteMin = dynamite.total
+                        }
+                      }
+                    }else{
+                      tempDynamiteMin = 0
+                    }
+
+                    //Confirming Grenade Range
+                    var grenade = player.casts.find((cast) => cast.name === "Iron Grenade");
+                    if (grenade) {
+                      if(tempGrenadeMax === null){
+                        tempGrenadeMax = grenade.total
+                      }else{
+                        if( grenade.total > tempGrenadeMax){
+                          tempGrenadeMax = grenade.total
+                        }
+                      }
+
+                      if(tempGrenadeMin === null){
+                        tempGrenadeMin = grenade.total
+                      }else{
+                        if( grenade.total < tempGrenadeMin){
+                          tempGrenadeMin = grenade.total
+                        }
+                      }
+                    }else{
+                      tempGrenadeMin = 0
+                    }
+
+                    //Confirming Dispel Range
+                    var dispels = player.casts.find((cast) => cast.name === "Dispel Magic");
+                    if (dispels) {
+                      if(tempDispelMax === null){
+                        tempDispelMax = dispels.total
+                      }else{
+                        if( dispels.total > tempDispelMax){
+                          tempDispelMax = dispels.total
+                        }
+                      }
+
+                      if(tempDispelMin === null){
+                        tempDispelMin = dispels.total
+                      }else{
+                        if( dispels.total < tempDispelMin){
+                          tempDispelMin = dispels.total
+                        }
+                      }
+                    }else{
+                      tempDispelMin = 0
+                    }
+
+                  })
+
+                setExpDmgRange({min:tempExpDmgMin, max:tempExpDmgMax})
+                setDispelRange({min:tempDispelMin, max:tempDispelMax})
+                setDynamiteRange({min:tempDynamiteMin, max:tempDynamiteMax})
+                setSunderRange({min:tempSunderMin, max:tempSunderMax})
+                setSapperRange({min:tempSapperMin, max:tempSapperMax})
+                setGrenadeRange({min:tempGrenadeMin, max:tempGrenadeMax})
                 setPlayers(_.cloneDeep(unValidatedPlayers));
               } else {
                 setError(true);
@@ -349,7 +670,7 @@ const RaidDetails = () => {
 
       if (healerFilter) {
         players.forEach((player) => {
-          if (player.role == "healer") {
+          if (player.role === "healer") {
             tempFilteredPlayers.push(player);
           }
         });
@@ -357,7 +678,7 @@ const RaidDetails = () => {
 
       if (dpsFilter) {
         players.forEach((player) => {
-          if (player.role == "dps") {
+          if (player.role === "dps") {
             tempFilteredPlayers.push(player);
           }
         });
@@ -408,6 +729,8 @@ const RaidDetails = () => {
         <div>Error with this log.</div>
       ) : (
         <div style={{ height: "calc(100vh - 200px)", width: "100%" }}>
+        <div>max: {sapperRange.max}</div>
+        <div>min: {sapperRange.min}</div>
           <DataGrid
             columns={columns}
             rows={filteredPlayers}
@@ -415,6 +738,11 @@ const RaidDetails = () => {
             initialState={{
               sorting: {
                 sortModel: [{ field: "icon", sort: "desc" }],
+              },
+              aggregation: {
+                model: {
+                  sunders: 'sum',
+                },
               },
             }}
           />

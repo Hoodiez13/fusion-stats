@@ -1,7 +1,7 @@
 import { useTheme } from "@emotion/react";
-import { BorderAll, Padding } from "@mui/icons-material";
 import React, { useState } from "react";
 import { NavLink } from "react-router-dom";
+import RaidIcons from "./RaidIcons";
 
 const RaidRow = ({ raid }) => {
   const theme = useTheme();
@@ -24,7 +24,7 @@ const RaidRow = ({ raid }) => {
       >
         <div style={{ display: "flex", width: "100%" }}>
           <div>
-            <img src={`/media/${raid.zone.name}.jpg`} />
+            <RaidIcons raid={raid.zone ? raid.zone.name:''}/>
           </div>
           <div style={{ flex: 1 }}>{`${raid.title ? raid.title : "N/A"}`}</div>
           <div style={{ flex: 1 }}>{`Zone: ${
